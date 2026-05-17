@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f9fbe5">
+<title>MOGU-bili监控器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-background": "#1a1d10",
+        "surface-container-highest": "#e2e4cf",
+        "surface": "#f9fbe5",
+        "surface-container": "#edf0da",
+        "secondary-fixed-dim": "#c6c6c6",
+        "on-surface-variant": "#444933",
+        "on-error": "#ffffff",
+        "primary": "#506600",
+        "surface-container-low": "#f3f5df",
+        "tertiary-fixed-dim": "#b6c9d8",
+        "on-primary-container": "#5b7300",
+        "on-tertiary-container": "#5b6d7a",
+        "on-secondary-container": "#646464",
+        "on-tertiary": "#ffffff",
+        "tertiary-container": "#dcefff",
+        "secondary-container": "#e2e2e2",
+        "primary-container": "#ccff00",
+        "tertiary-fixed": "#d2e5f5",
+        "surface-variant": "#e2e4cf",
+        "secondary": "#5e5e5e",
+        "on-secondary": "#ffffff",
+        "on-primary": "#ffffff",
+        "inverse-on-surface": "#f0f3dd",
+        "surface-container-lowest": "#ffffff",
+        "tertiary": "#4f616e",
+        "error": "#ba1a1a",
+        "on-secondary-fixed-variant": "#474747",
+        "on-secondary-fixed": "#1b1b1b",
+        "on-error-container": "#93000a",
+        "secondary-fixed": "#e2e2e2",
+        "outline": "#747a60",
+        "background": "#f9fbe5",
+        "outline-variant": "#c4c9ac",
+        "on-tertiary-fixed-variant": "#374956",
+        "surface-bright": "#f9fbe5",
+        "primary-fixed": "#c3f400",
+        "on-tertiary-fixed": "#0b1d29",
+        "inverse-primary": "#abd600",
+        "on-surface": "#1a1d10",
+        "surface-container-high": "#e7ead4",
+        "surface-dim": "#d9dcc6",
+        "on-primary-fixed-variant": "#3c4d00",
+        "error-container": "#ffdad6",
+        "on-primary-fixed": "#161e00",
+        "inverse-surface": "#2f3223",
+        "surface-tint": "#506600",
+        "primary-fixed-dim": "#abd600"
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { gutter: "24px", base: "4px", lg: "40px", xs: "8px", xl: "64px", sm: "16px", md: "24px", "container-max": "1440px" },
+      fontFamily: {
+        "body-md": ["Inter"], "data-mono": ["Space Grotesk"], "h3": ["Space Grotesk"],
+        "h1": ["Space Grotesk"], "body-sm": ["Inter"], "h2": ["Space Grotesk"],
+        "label-caps": ["Space Grotesk"], "body-lg": ["Inter"]
+      },
+      fontSize: {
+        "body-md": ["16px", { lineHeight: "1.5", letterSpacing: "0em", fontWeight: "400" }],
+        "data-mono": ["14px", { lineHeight: "1.0", letterSpacing: "0em", fontWeight: "500" }],
+        "h3": ["24px", { lineHeight: "1.3", letterSpacing: "0em", fontWeight: "600" }],
+        "h1": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "body-sm": ["14px", { lineHeight: "1.5", letterSpacing: "0em", fontWeight: "400" }],
+        "h2": ["32px", { lineHeight: "1.2", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "label-caps": ["12px", { lineHeight: "1.2", letterSpacing: "0.1em", fontWeight: "700" }],
+        "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }]
+      }
+    }
+  }
+}
+</script>
+<style>
+body {
+  background-color: #f9fbe5;
+  background-image: linear-gradient(to right, #e2e4cf 1px, transparent 1px), linear-gradient(to bottom, #e2e4cf 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-attachment: fixed;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: #c4c9ac; border-radius: 10px; }
+.log-scroll::-webkit-scrollbar { width: 6px; }
+.log-scroll::-webkit-scrollbar-track { background: transparent; }
+.log-scroll::-webkit-scrollbar-thumb { background-color: #c4c9ac; border-radius: 10px; }
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px); filter: blur(2px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(60px) scale(0.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
+@keyframes toastOut { from { opacity: 1; transform: translateX(0) scale(1); } to { opacity: 0; transform: translateX(60px) scale(0.95); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes breathe { 0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(204,255,0,0.4); } 50% { transform: scale(1.06); box-shadow: 0 8px 32px rgba(204,255,0,0.6); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(204,255,0,0.3); } 50% { box-shadow: 0 0 20px rgba(204,255,0,0.6); } }
+@keyframes floatUp { 0% { opacity: 0; transform: translateY(24px) scale(0.96); filter: blur(4px); } 100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+@keyframes borderGlow { 0%, 100% { border-color: rgba(204,255,0,0.2); } 50% { border-color: rgba(204,255,0,0.6); } }
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+.animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.animate-slide-down { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.animate-fade-in { animation: fadeIn 0.4s ease-out backwards; }
+.animate-toast-in { animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.animate-toast-out { animation: toastOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards; }
+.animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.animate-float-up { animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.animate-breathe { animation: breathe 3s ease-in-out infinite; }
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+.animate-border-glow { animation: borderGlow 2s ease-in-out infinite; }
+
+.spinner { width: 14px; height: 14px; border: 2px solid #e2e4cf; border-top-color: #ccff00; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+.card-hover { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); will-change: transform, box-shadow; }
+.card-hover:hover { transform: translateY(-4px) scale(1.005); box-shadow: 0 12px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(204,255,0,0.1); }
+.card-hover:active { transform: translateY(-1px) scale(0.998); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+.btn-ripple { position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.btn-ripple::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: rgba(255,255,255,0.4); border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; }
+.btn-ripple:active::after { animation: ripple 0.6s ease-out; }
+.btn-ripple:hover { transform: translateY(-1px); }
+.btn-ripple:active { transform: translateY(0) scale(0.98); }
+
+.glass-card { background: rgba(255,255,255,0.72); backdrop-filter: blur(24px) saturate(200%); -webkit-backdrop-filter: blur(24px) saturate(200%); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 4px 24px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.8); }
+
+.shimmer-bg { background: linear-gradient(90deg, transparent 0%, rgba(204,255,0,0.08) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 2s ease-in-out infinite; }
+
+input:focus, select:focus { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+input:focus, select:focus { box-shadow: 0 0 0 3px rgba(204,255,0,0.2); border-color: rgba(204,255,0,0.5); }
+input::placeholder { transition: all 0.3s ease; }
+input:focus::placeholder { opacity: 0.3; transform: translateX(4px); }
+
+.tab-indicator { transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+
+.nav-item { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; }
+.nav-item::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%) scaleY(0); width: 3px; height: 60%; background: #ccff00; border-radius: 0 4px 4px 0; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.nav-item:hover::before { transform: translateY(-50%) scaleY(1); }
+
+* { -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d4d8c0; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #b8bca4; }
+
+tr { transition: all 0.2s ease; }
+tr:hover { background-color: rgba(204,255,0,0.05); }
+
+.status-dot { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.status-dot.active { animation: pulse 2s ease-in-out infinite; box-shadow: 0 0 8px currentColor; }
+
+.nav-item { transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+.nav-item:hover { transform: translateX(4px); }
+</style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased selection:bg-primary-container selection:text-on-primary-container">
+
+<!-- Loading Overlay -->
+<div id="font-loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#f9fbe5;z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity 0.5s cubic-bezier(0.16,1,0.3,1);">
+  <div style="text-align:center;">
+    <div style="width:56px;height:56px;border-radius:16px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(0,0,0,0.1);animation:breathe 2s ease-in-out infinite;overflow:hidden;">
+      <img src="icon.png" alt="logo" style="width:100%;height:100%;object-fit:cover;">
+    </div>
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;color:#1a1d10;letter-spacing:-0.02em;">MOGU-bili监控器</div>
+    <div style="font-family:'Inter',sans-serif;font-size:12px;color:#747a60;margin-top:6px;">正在加载资源...</div>
+    <div style="width:200px;height:4px;background:#e6ebcf;border-radius:999px;margin:18px auto 0;overflow:hidden;">
+      <div id="boot-progress-bar" style="height:100%;width:18%;background:linear-gradient(90deg,#ccff00,#a3cc00);border-radius:999px;transition:width .3s cubic-bezier(0.16,1,0.3,1);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-64 border-r border-gray-100 bg-white/80 backdrop-blur-xl flex flex-col p-6 z-50 hidden lg:flex">
+  <div class="mb-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.1)] animate-breathe overflow-hidden">
+        <img src="icon.png" alt="logo" class="w-full h-full object-cover">
+      </div>
+      <div>
+        <h1 class="font-black text-black text-lg tracking-tighter leading-none">MOGU-bili</h1>
+        <p class="font-['Space_Grotesk'] text-[10px] text-gray-400 mt-0.5 tracking-widest">V2.1.0 PRO</p>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col space-y-1 flex-grow">
+    <a href="#" class="nav-item flex items-center gap-3 bg-gradient-to-r from-lime-400 to-lime-500 text-black font-bold rounded-xl shadow-[0_4px_16px_rgba(204,255,0,0.35)] px-4 py-3 font-['Space_Grotesk'] text-sm btn-ripple">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>控制面板
+    </a>
+    <a href="#targets" class="nav-item flex items-center gap-3 text-gray-500 hover:text-black px-4 py-3 hover:bg-gray-100/50 font-['Space_Grotesk'] text-sm rounded-xl">
+      <span class="material-symbols-outlined">radar</span>监控目标
+    </a>
+    <a href="#history" class="nav-item flex items-center gap-3 text-gray-500 hover:text-black px-4 py-3 hover:bg-gray-100/50 font-['Space_Grotesk'] text-sm rounded-xl">
+      <span class="material-symbols-outlined">history</span>历史动态
+    </a>
+    <a href="#config" class="nav-item flex items-center gap-3 text-gray-500 hover:text-black px-4 py-3 hover:bg-gray-100/50 font-['Space_Grotesk'] text-sm rounded-xl">
+      <span class="material-symbols-outlined">tune</span>系统配置
+    </a>
+    <a href="#terminal" class="nav-item flex items-center gap-3 text-gray-500 hover:text-black px-4 py-3 hover:bg-gray-100/50 font-['Space_Grotesk'] text-sm rounded-xl">
+      <span class="material-symbols-outlined">terminal</span>终端日志
+    </a>
+  </div>
+  <button class="mt-auto w-full py-3 bg-black text-white font-['Space_Grotesk'] text-sm font-bold rounded-xl hover:bg-gray-800 transition-all duration-300 shadow-sm btn-ripple hover:shadow-md hover:-translate-y-0.5 active:translate-y-0" onclick="showAddGroupForm()">
+    + 新建分组
+  </button>
+</nav>
+
+<!-- Mobile Top Header -->
+<header class="lg:hidden fixed top-0 left-0 right-0 h-16 z-50 bg-white/70 backdrop-blur-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] flex justify-between items-center px-6 border-b border-gray-100">
+  <div class="flex items-center gap-3">
+    <div class="w-9 h-9 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(0,0,0,0.1)] overflow-hidden">
+      <img src="icon.png" alt="logo" class="w-full h-full object-cover">
+    </div>
+    <div>
+      <h1 class="font-black text-black text-lg tracking-tighter">MOGU-bili监控器</h1>
+    </div>
+  </div>
+  <div class="flex items-center gap-2">
+    <div id="mobileStatusBadge" class="flex items-center gap-2 bg-gray-100 border border-gray-200 px-3 py-1 rounded-full">
+      <span class="w-2 h-2 rounded-full bg-red-400"></span>
+      <span class="font-['Space_Grotesk'] text-[10px] text-gray-500 font-bold tracking-wider uppercase" id="mobileStatusText">OFFLINE</span>
+    </div>
+  </div>
+</header>
+
+<!-- Desktop TopNavBar -->
+<header class="hidden lg:flex fixed top-0 right-0 left-64 h-16 z-40 border-b border-gray-100 bg-white/70 backdrop-blur-lg shadow-[0_4px_20px_rgba(0,0,0,0.04)] justify-between items-center px-8 transition-all duration-200">
+  <div class="flex gap-2">
+    <button onclick="startMonitor()" id="btnStart" class="btn-ripple bg-green-500 hover:bg-green-600 hover:-translate-y-0.5 text-white px-5 py-2 rounded-xl font-['Space_Grotesk'] tracking-tight text-sm font-bold transition-all duration-300 active:scale-95 flex items-center gap-1.5 shadow-sm hover:shadow-md">
+      <span class="material-symbols-outlined text-[16px]">play_arrow</span>开始
+    </button>
+    <button onclick="stopMonitor()" id="btnStop" class="btn-ripple bg-red-500 hover:bg-red-600 hover:-translate-y-0.5 text-white px-5 py-2 rounded-xl font-['Space_Grotesk'] tracking-tight text-sm font-bold transition-all duration-300 active:scale-95 flex items-center gap-1.5 shadow-sm opacity-50 cursor-not-allowed" disabled>
+      <span class="material-symbols-outlined text-[16px]">stop</span>停止
+    </button>
+    <button onclick="runCheck()" id="btnCheck" class="btn-ripple bg-blue-500 hover:bg-blue-600 hover:-translate-y-0.5 text-white px-5 py-2 rounded-xl font-['Space_Grotesk'] tracking-tight text-sm font-bold transition-all duration-300 active:scale-95 flex items-center gap-1.5 shadow-sm hover:shadow-md">
+      <span class="material-symbols-outlined text-[16px]">search</span>检查
+    </button>
+    <button onclick="retryUnnotified()" id="btnRetryUnnotified" class="btn-ripple bg-cyan-500 hover:bg-cyan-600 hover:-translate-y-0.5 text-white px-5 py-2 rounded-xl font-['Space_Grotesk'] tracking-tight text-sm font-bold transition-all duration-300 active:scale-95 flex items-center gap-1.5 shadow-sm hover:shadow-md">
+      <span class="material-symbols-outlined text-[16px]">send</span>补推未通知
+    </button>
+    <button onclick="runCleanup()" id="btnCleanup" class="btn-ripple bg-amber-500 hover:bg-amber-600 hover:-translate-y-0.5 text-white px-5 py-2 rounded-xl font-['Space_Grotesk'] tracking-tight text-sm font-bold transition-all duration-300 active:scale-95 flex items-center gap-1.5 shadow-sm hover:shadow-md">
+      <span class="material-symbols-outlined text-[16px]">cleaning_services</span>清理
+    </button>
+    <button onclick="testDefaultFeishu()" id="btnTestPush" class="btn-ripple bg-purple-500 hover:bg-purple-600 hover:-translate-y-0.5 text-white px-5 py-2 rounded-xl font-['Space_Grotesk'] tracking-tight text-sm font-bold transition-all duration-300 active:scale-95 flex items-center gap-1.5 shadow-sm hover:shadow-md">
+      <span class="material-symbols-outlined text-[16px]">notifications</span>测试推送
+    </button>
+  </div>
+  <div class="flex items-center gap-6">
+    <div class="flex items-center gap-2 text-gray-400 font-['Space_Grotesk'] tracking-tight text-sm font-medium">
+      <span class="w-2 h-2 rounded-full bg-lime-400 animate-pulse"></span>间隔
+    </div>
+    <select id="intervalSelect" onchange="updateInterval(this.value)" class="bg-surface-container border border-outline-variant rounded-lg px-3 py-1.5 text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container">
+      <option value="30s">30秒</option><option value="1m">1分钟</option><option value="5m" selected>5分钟</option>
+      <option value="10m">10分钟</option><option value="15m">15分钟</option><option value="30m">30分钟</option>
+      <option value="1h">1小时</option><option value="2h">2小时</option><option value="6h">6小时</option>
+      <option value="12h">12小时</option><option value="24h">24小时</option>
+    </select>
+    <div class="flex items-center gap-2 border-l border-gray-200 pl-6">
+      <button onclick="refreshAll()" class="text-gray-400 hover:text-black hover:bg-gray-50 p-2 rounded-full transition-all duration-200 active:scale-95" title="刷新">
+        <span class="material-symbols-outlined text-[18px]">refresh</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Bottom Nav -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full z-50 bg-white/70 backdrop-blur-lg shadow-[0_-4px_20px_rgba(0,0,0,0.04)] flex justify-around items-center px-2 pb-4 pt-2 border-t border-gray-100">
+  <a href="#" class="flex flex-col items-center justify-center text-black border-t-2 border-lime-400 pt-2 w-1/5 transition-colors">
+    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+    <span class="text-[9px] font-['Space_Grotesk'] font-bold uppercase tracking-wider mt-0.5">面板</span>
+  </a>
+  <a href="#targets" class="flex flex-col items-center justify-center text-gray-400 border-t-2 border-transparent pt-2 w-1/5 hover:text-lime-500 transition-colors">
+    <span class="material-symbols-outlined text-[20px]">radar</span>
+    <span class="text-[9px] font-['Space_Grotesk'] font-bold uppercase tracking-wider mt-0.5">目标</span>
+  </a>
+  <a href="#history" class="flex flex-col items-center justify-center text-gray-400 border-t-2 border-transparent pt-2 w-1/5 hover:text-lime-500 transition-colors">
+    <span class="material-symbols-outlined text-[20px]">history</span>
+    <span class="text-[9px] font-['Space_Grotesk'] font-bold uppercase tracking-wider mt-0.5">历史</span>
+  </a>
+  <a href="#config" class="flex flex-col items-center justify-center text-gray-400 border-t-2 border-transparent pt-2 w-1/5 hover:text-lime-500 transition-colors">
+    <span class="material-symbols-outlined text-[20px]">tune</span>
+    <span class="text-[9px] font-['Space_Grotesk'] font-bold uppercase tracking-wider mt-0.5">配置</span>
+  </a>
+  <a href="#terminal" class="flex flex-col items-center justify-center text-gray-400 border-t-2 border-transparent pt-2 w-1/5 hover:text-lime-500 transition-colors">
+    <span class="material-symbols-outlined text-[20px]">terminal</span>
+    <span class="text-[9px] font-['Space_Grotesk'] font-bold uppercase tracking-wider mt-0.5">日志</span>
+  </a>
+</nav>
+
+<!-- Main Content -->
+<main class="lg:ml-64 lg:pt-16 pt-20 pb-24 lg:pb-8 min-h-screen relative">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-40 -right-40 w-80 h-80 bg-lime-200/20 rounded-full blur-3xl animate-breathe"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-200/15 rounded-full blur-3xl animate-breathe" style="animation-delay:1s;"></div>
+  </div>
+  <div class="p-4 lg:p-8 max-w-container-max mx-auto relative z-10">
+
+    <!-- Page Header -->
+    <div class="mb-8 lg:mb-10 flex flex-col lg:flex-row lg:justify-between lg:items-end gap-4">
+      <div>
+        <h2 class="font-h1 text-h1 text-on-surface mb-2">系统总览</h2>
+        <p class="font-body-md text-body-md text-on-surface-variant">实时数据监控与告警配置中枢。</p>
+      </div>
+      <div class="font-data-mono text-data-mono text-on-surface-variant bg-surface-container py-2 px-4 rounded-lg border border-outline-variant hidden lg:block">
+        <span id="uptimeDisplay">UPTIME: -- | LATENCY: --</span>
+      </div>
+    </div>
+
+    <!-- Mobile Control Buttons -->
+    <div class="lg:hidden flex gap-2 mb-4 overflow-x-auto pb-2">
+      <button onclick="startMonitor()" id="mBtnStart" class="btn-ripple flex-shrink-0 flex items-center gap-1 bg-green-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm font-['Space_Grotesk'] active:scale-95 transition-all duration-300 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">play_arrow</span>开始
+      </button>
+      <button onclick="stopMonitor()" id="mBtnStop" class="btn-ripple flex-shrink-0 flex items-center gap-1 bg-red-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm font-['Space_Grotesk'] active:scale-95 transition-all duration-300 shadow-sm opacity-50 cursor-not-allowed" disabled>
+        <span class="material-symbols-outlined text-[16px]">stop</span>停止
+      </button>
+      <button onclick="runCheck()" id="mBtnCheck" class="btn-ripple flex-shrink-0 flex items-center gap-1 bg-blue-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm font-['Space_Grotesk'] active:scale-95 transition-all duration-300 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">search</span>检查
+      </button>
+      <button onclick="retryUnnotified()" id="mBtnRetryUnnotified" class="btn-ripple flex-shrink-0 flex items-center gap-1 bg-cyan-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm font-['Space_Grotesk'] active:scale-95 transition-all duration-300 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">send</span>补推
+      </button>
+      <button onclick="runCleanup()" id="mBtnCleanup" class="btn-ripple flex-shrink-0 flex items-center gap-1 bg-amber-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm font-['Space_Grotesk'] active:scale-95 transition-all duration-300 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">cleaning_services</span>清理
+      </button>
+      <button onclick="testDefaultFeishu()" id="mBtnTestPush" class="btn-ripple flex-shrink-0 flex items-center gap-1 bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm font-['Space_Grotesk'] active:scale-95 transition-all duration-300 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">notifications</span>推送
+      </button>
+    </div>
+
+    <!-- Mobile Interval Selector -->
+    <div class="lg:hidden flex items-center gap-2 mb-4 bg-white/80 backdrop-blur-md border border-outline-variant rounded-xl px-4 py-3 shadow-sm">
+      <span class="material-symbols-outlined text-on-surface-variant text-[18px]">schedule</span>
+      <span class="text-sm text-on-surface-variant font-medium">检查间隔</span>
+      <select id="mIntervalSelect" onchange="updateInterval(this.value)" class="ml-auto bg-surface-container border border-outline-variant rounded-lg px-3 py-1.5 text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container">
+        <option value="30s">30秒</option><option value="1m">1分钟</option><option value="5m" selected>5分钟</option>
+        <option value="10m">10分钟</option><option value="15m">15分钟</option><option value="30m">30分钟</option>
+        <option value="1h">1小时</option><option value="2h">2小时</option><option value="6h">6小时</option>
+        <option value="12h">12小时</option><option value="24h">24小时</option>
+      </select>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-gutter mb-gutter">
+      <div class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up stagger-1">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-400/20 to-lime-500/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-lime-600 text-[22px]" style="font-variation-settings: 'FILL' 1;">track_changes</span>
+          </div>
+          <span class="font-data-mono text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md">TARGETS</span>
+        </div>
+        <div class="font-h2 text-h2 text-on-surface" id="statTargets">0</div>
+        <div class="font-body-sm text-body-sm text-on-surface-variant mt-1">监控目标</div>
+      </div>
+      <div class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up stagger-2">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400/20 to-blue-500/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-blue-600 text-[22px]" style="font-variation-settings: 'FILL' 1;">videocam</span>
+          </div>
+          <span class="font-data-mono text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md">VIDEOS</span>
+        </div>
+        <div class="font-h2 text-h2 text-on-surface" id="statVideos">0</div>
+        <div class="font-body-sm text-body-sm text-on-surface-variant mt-1">视频记录</div>
+      </div>
+      <div class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up stagger-3">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400/20 to-purple-500/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-purple-600 text-[22px]" style="font-variation-settings: 'FILL' 1;">article</span>
+          </div>
+          <span class="font-data-mono text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md">DYNAMICS</span>
+        </div>
+        <div class="font-h2 text-h2 text-on-surface" id="statDynamics">0</div>
+        <div class="font-body-sm text-body-sm text-on-surface-variant mt-1">动态记录</div>
+      </div>
+      <div class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up stagger-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-500/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-amber-600 text-[22px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
+          </div>
+          <span class="font-data-mono text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md">INTERVAL</span>
+        </div>
+        <div class="font-h2 text-h2 text-on-surface" id="statInterval">5m</div>
+        <div class="font-body-sm text-body-sm text-on-surface-variant mt-1">检查间隔</div>
+      </div>
+    </div>
+
+    <!-- Bento Grid Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+
+      <!-- Left Column (lg: col-span 8) -->
+      <div class="lg:col-span-8 flex flex-col gap-gutter">
+
+        <!-- Target Management -->
+        <div id="targets" class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up">
+          <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-on-surface text-[24px]" style="font-variation-settings: 'FILL' 1;">radar</span>
+              <div>
+                <h3 class="font-h3 text-h3 text-on-surface">监控目标</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">管理需要监控的B站UP主。</p>
+              </div>
+            </div>
+            <span class="font-data-mono text-data-mono text-on-surface-variant bg-surface-container py-1 px-3 rounded-lg border border-outline-variant" id="targetCount"></span>
+          </div>
+          <div class="flex gap-2 mb-4">
+            <input type="text" id="newUidInput" placeholder="输入UID或空间链接" onkeydown="if(event.key==='Enter') addTarget()"
+              class="flex-1 bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container focus:bg-white transition-all placeholder:text-gray-400">
+            <button onclick="addTarget()" class="btn-ripple bg-lime-400 text-black font-bold px-4 py-2.5 rounded-xl text-sm font-['Space_Grotesk'] hover:brightness-95 active:scale-95 transition-all duration-300 shadow-[0_4px_12px_rgba(204,255,0,0.4)] flex items-center gap-1 hover:-translate-y-0.5">
+              <span class="material-symbols-outlined text-[16px]">add</span>添加
+            </button>
+          </div>
+          <div id="targetList" class="flex flex-col gap-2">
+            <div class="text-center py-8 text-gray-400">
+              <span class="material-symbols-outlined text-[32px] mb-2">search</span>
+              <div class="text-sm">加载中...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History & Data Tabs -->
+        <div id="history" class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up">
+          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-outline-variant">
+            <button class="tab-btn active px-4 py-2 rounded-xl bg-lime-400 text-black font-bold text-sm font-['Space_Grotesk'] transition-all duration-300" onclick="switchTab('history', this)">历史</button>
+            <button class="tab-btn px-4 py-2 rounded-xl text-gray-500 hover:bg-gray-100 font-bold text-sm font-['Space_Grotesk'] transition-all duration-300" onclick="switchTab('videos', this)">视频</button>
+            <button class="tab-btn px-4 py-2 rounded-xl text-gray-500 hover:bg-gray-100 font-bold text-sm font-['Space_Grotesk'] transition-all duration-300" onclick="switchTab('dynamics', this)">动态</button>
+          </div>
+
+          <div id="tab-history" class="tab-content active">
+            <div id="historyList" class="flex flex-col gap-2">
+              <div class="text-center py-8 text-gray-400">
+                <span class="material-symbols-outlined text-[32px] mb-2">inbox</span>
+                <div class="text-sm">暂无检查记录</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-videos" class="tab-content hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="border-b border-outline-variant">
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">BV号</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">标题</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">UP主</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">时间</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">通知</th>
+                </tr></thead>
+                <tbody id="videosTable"><tr><td colspan="5" class="text-center text-gray-400 py-8">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="tab-dynamics" class="tab-content hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="border-b border-outline-variant">
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">标题/ID</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">UP主</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">类型</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">内容</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">图片</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">时间</th>
+                  <th class="text-left py-2 px-2 font-label-caps text-label-caps text-on-surface-variant">通知</th>
+                </tr></thead>
+                <tbody id="dynamicsTable"><tr><td colspan="7" class="text-center text-gray-400 py-8">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (lg: col-span 4) -->
+      <div class="lg:col-span-4 flex flex-col gap-gutter">
+
+        <!-- Quick Config -->
+        <div id="config" class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up">
+          <div class="flex justify-between items-center mb-5">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-on-surface text-[24px]" style="font-variation-settings: 'FILL' 1;">tune</span>
+              <h3 class="font-h3 text-h3 text-on-surface">配置</h3>
+            </div>
+            <button onclick="saveConfig()" class="text-gray-400 hover:text-black hover:bg-gray-50 p-2 rounded-lg transition-all active:scale-95" title="保存">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between py-2">
+              <span class="font-body-sm text-body-sm text-on-surface">飞书推送</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="cfgEnableFeishu" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-400"></div>
+              </label>
+            </div>
+            <div class="flex items-center justify-between py-2">
+              <span class="font-body-sm text-body-sm text-on-surface">本地报告</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="cfgEnableLocal" checked class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-400"></div>
+              </label>
+            </div>
+            <div class="flex items-center justify-between py-2">
+              <span class="font-body-sm text-body-sm text-on-surface">视频下载</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="cfgEnableDownload" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-lime-400"></div>
+              </label>
+            </div>
+          </div>
+
+          <div class="h-px bg-outline-variant my-4"></div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1.5">飞书 Webhook</label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-[16px]">link</span>
+                <input type="text" id="cfgFeishuUrl" class="w-full bg-surface pl-9 pr-10 py-2.5 border border-outline-variant rounded-lg text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container transition-all placeholder:text-gray-400" placeholder="https://open.feishu.cn/...">
+                <button onclick="testDefaultFeishu()" id="btnTestDefault" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black p-1 rounded transition-all" title="测试">
+                  <span class="material-symbols-outlined text-[16px]">send</span>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1.5">签名密钥</label>
+              <input type="password" id="cfgFeishuSecret" class="w-full bg-surface px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container transition-all placeholder:text-gray-400" placeholder="可选">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1.5">Feishu App ID</label>
+                <input type="text" id="cfgFeishuAppId" class="w-full bg-surface px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container transition-all placeholder:text-gray-400" placeholder="cli_xxx">
+              </div>
+              <div>
+                <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1.5">App Secret</label>
+                <input type="password" id="cfgFeishuAppSecret" class="w-full bg-surface px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container transition-all placeholder:text-gray-400" placeholder="用于图片上传">
+              </div>
+            </div>
+            <div id="feishuAppHint" class="glass-card rounded-xl p-4 text-xs text-blue-700 leading-relaxed border border-blue-200/60 animate-float-up" style="display:none;">
+              <div class="flex items-center gap-2 font-bold mb-2 text-sm">
+                <span class="material-symbols-outlined text-blue-500 text-[18px]" style="font-variation-settings:'FILL' 1;">info</span>
+                如何获取 Feishu App ID 和 App Secret？
+              </div>
+              <ol class="list-decimal ml-4 space-y-1">
+                <li>前往 <a href="https://open.feishu.cn/app" target="_blank" class="underline font-medium text-blue-600 hover:text-blue-800 transition-colors">飞书开放平台</a> 创建企业自建应用</li>
+                <li>在应用凭证页面获取 <code class="bg-blue-100 px-1.5 py-0.5 rounded font-mono">App ID</code> 和 <code class="bg-blue-100 px-1.5 py-0.5 rounded font-mono">App Secret</code></li>
+                <li>在「权限管理」中开通: <code class="bg-blue-100 px-1.5 py-0.5 rounded font-mono">im:resource:upload</code>（上传图片）</li>
+                <li>在「事件订阅」中添加机器人能力，发布应用</li>
+                <li>将 App ID 和 App Secret 填入上方输入框并保存</li>
+              </ol>
+              <div class="mt-2 px-3 py-2 bg-gradient-to-r from-lime-50 to-lime-100 rounded-lg text-lime-800 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1;">check_circle</span>
+                配置后推送将显示图片而非链接
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1.5">保留天数</label>
+                <input type="number" id="cfgRetentionDays" value="30" min="1" max="365" class="w-full bg-surface px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container transition-all">
+              </div>
+              <div>
+                <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1.5">日志级别</label>
+                <select id="cfgLogLevel" class="w-full bg-surface px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container transition-all">
+                  <option value="DEBUG">DEBUG</option><option value="INFO" selected>INFO</option><option value="WARNING">WARNING</option><option value="ERROR">ERROR</option>
+                </select>
+              </div>
+            </div>
+            <div class="h-px bg-outline-variant my-4"></div>
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="block font-label-caps text-label-caps text-on-surface-variant">配置迁移</label>
+                <div class="flex gap-2">
+                  <button onclick="exportTransferSettings()" class="inline-flex items-center gap-1 bg-black text-white px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-gray-800 active:scale-95 transition-all" title="导出配置">
+                    <span class="material-symbols-outlined text-[14px]">ios_share</span>导出
+                  </button>
+                  <button onclick="importTransferSettings()" class="inline-flex items-center gap-1 bg-lime-400 text-black px-3 py-1.5 rounded-lg text-[11px] font-bold hover:brightness-95 active:scale-95 transition-all" title="导入配置">
+                    <span class="material-symbols-outlined text-[14px]">download</span>导入
+                  </button>
+                </div>
+              </div>
+              <textarea id="settingsTransferBox" class="w-full min-h-[88px] bg-surface px-3 py-2.5 border border-outline-variant rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-primary-container transition-all placeholder:text-gray-400" placeholder="电脑端点导出后复制这里，APP 端粘贴后点导入"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cookie Auth -->
+        <div id="cookieCard" class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up">
+          <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-on-surface text-[24px]" style="font-variation-settings: 'FILL' 1;">cookie</span>
+              <h3 class="font-h3 text-h3 text-on-surface">B站登录</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="cookieStatusBadge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500">
+                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                未登录
+              </span>
+              <button onclick="clearCookie()" class="text-gray-400 hover:text-red-500 p-1.5 rounded-lg transition-all active:scale-95" title="退出登录">
+                <span class="material-symbols-outlined text-[16px]">logout</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="cookieStatusInfo" class="mb-3 p-3 rounded-lg bg-surface-container text-body-sm text-on-surface-variant hidden">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">info</span>
+              <span id="cookieStatusMsg">未登录，使用公开 API 获取数据</span>
+            </div>
+          </div>
+
+          <!-- Cookie Input Section -->
+          <div class="space-y-3">
+            <div>
+              <label class="block font-label-caps text-label-caps text-on-surface-variant mb-1.5">粘贴 Cookie</label>
+              <textarea id="cookieInput" rows="3" class="w-full bg-surface px-3 py-2.5 border border-outline-variant rounded-lg text-xs font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container transition-all placeholder:text-gray-400 resize-none" placeholder="支持浏览器 Cookie 字符串、逐行 key=value 或 JSON 格式"></textarea>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="saveCookie()" id="btnSaveCookie" class="flex-1 bg-surface-container text-on-surface-variant font-bold py-2 rounded-lg text-xs hover:bg-gray-200 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">save</span>
+                保存并验证
+              </button>
+              <button onclick="verifyCookie()" id="btnVerifyCookie" class="px-3 bg-surface-container text-on-surface-variant font-bold py-2 rounded-lg text-xs hover:bg-gray-200 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                验证
+              </button>
+            </div>
+            <div class="text-xs text-gray-400 space-y-1">
+              <p>如何获取：登录 bilibili.com → F12 → Application → Cookies → 复制 SESSDATA</p>
+            </div>
+          </div>
+
+          <div class="h-px bg-outline-variant my-3"></div>
+
+          <div class="text-xs text-gray-400 space-y-1">
+            <p class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[14px]">info</span>
+              登录后可获取完整动态（含转发），避免 API 限流；不登录也能正常使用公开 API
+            </p>
+          </div>
+        </div>
+
+        <!-- Notify Groups -->
+        <div class="glass-card card-hover rounded-2xl p-4 lg:p-6 animate-float-up">
+          <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-on-surface text-[24px]" style="font-variation-settings: 'FILL' 1;">hub</span>
+              <h3 class="font-h3 text-h3 text-on-surface">机器人分组</h3>
+            </div>
+            <button onclick="showAddGroupForm()" class="btn-ripple w-8 h-8 bg-lime-400 rounded-full flex items-center justify-center text-black hover:brightness-95 active:scale-95 transition-all duration-300 shadow-[0_0_12px_rgba(204,255,0,0.4)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] hover:scale-110">
+              <span class="material-symbols-outlined text-[16px]">add</span>
+            </button>
+          </div>
+
+          <div id="addGroupForm" style="display:none;" class="mb-4 p-4 bg-surface-container rounded-xl border border-outline-variant">
+            <div class="space-y-3">
+              <input type="text" id="newGroupName" placeholder="分组名称" class="w-full bg-white px-3 py-2 border border-outline-variant rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-container">
+              <input type="text" id="newGroupWebhook" placeholder="Webhook URL" class="w-full bg-white px-3 py-2 border border-outline-variant rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-container">
+              <input type="text" id="newGroupSecret" placeholder="签名密钥 (可选)" class="w-full bg-white px-3 py-2 border border-outline-variant rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary-container">
+              <div class="flex gap-2">
+                <button onclick="createNotifyGroup()" class="flex-1 bg-lime-400 text-black font-bold py-2 rounded-lg text-sm hover:brightness-95 active:scale-95 transition-all">创建</button>
+                <button onclick="hideAddGroupForm()" class="flex-1 bg-gray-100 text-gray-500 font-bold py-2 rounded-lg text-sm hover:bg-gray-200 active:scale-95 transition-all">取消</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="notifyGroupsList" class="flex flex-col gap-2">
+            <div class="text-center py-6 text-gray-400">
+              <span class="material-symbols-outlined text-[24px] mb-1">hub</span>
+              <div class="text-xs">暂无分组</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terminal Log Section -->
+    <div id="terminal" class="mt-gutter bg-[#1a1d10] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-outline-variant animate-slide-up">
+      <div class="bg-[#2f3223] px-4 lg:px-6 py-3 flex justify-between items-center border-b border-gray-700">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary-container text-[16px]">terminal</span>
+          <span class="font-data-mono text-body-sm text-primary-container uppercase tracking-widest">终端日志</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="clearLogs()" class="text-gray-400 hover:text-white text-xs font-['Space_Grotesk'] transition-colors">清空</button>
+          <div class="flex gap-1.5">
+            <div class="w-2.5 h-2.5 rounded-full bg-gray-500/30"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-gray-500/30"></div>
+            <div class="w-2.5 h-2.5 rounded-full bg-lime-400"></div>
+          </div>
+        </div>
+      </div>
+      <div id="terminalBody" class="log-scroll p-4 lg:p-6 font-data-mono text-data-mono text-white/80 overflow-y-auto max-h-64 lg:max-h-80">
+        <div class="text-center text-gray-500 py-8 italic">等待日志输出...</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-[1000] flex flex-col gap-2"></div>
+
+<script>
+// ====== API Helper ======
+async function api(path, opts = {}) {
+  const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  if (!res.ok) {
+    let errMsg = res.statusText;
+    try { const t = await res.text(); const j = JSON.parse(t); errMsg = j.error || j.message || t || res.statusText; } catch(e) { errMsg = res.statusText; }
+    throw new Error(errMsg);
+  }
+  return res.json();
+}
+
+// ====== Status ======
+async function refreshStatus() {
+  try {
+    const s = await api('/api/status');
+    const running = s.running;
+    const badge = document.getElementById('statusBadge') || document.getElementById('mobileStatusBadge');
+    const text = document.getElementById('statusText') || document.getElementById('mobileStatusText');
+    if (badge && text) {
+      if (running) {
+        badge.className = badge.className.replace('stopped', '').replace('bg-gray-100', 'bg-lime-400/20').replace('border-gray-200', 'border-lime-400/30');
+        if (!badge.className.includes('bg-lime-400/20')) badge.className += ' bg-lime-400/20 border-lime-400/30';
+        text.textContent = 'MONITORING';
+        text.className = text.className.replace('text-gray-500', 'text-lime-600');
+      } else {
+        badge.className = badge.className.replace('bg-lime-400/20', 'bg-gray-100').replace('border-lime-400/30', 'border-gray-200');
+        text.textContent = 'OFFLINE';
+        text.className = text.className.replace('text-lime-600', 'text-gray-500');
+      }
+    }
+    document.getElementById('statTargets').textContent = s.target_count || 0;
+    document.getElementById('statVideos').textContent = s.stats?.total_videos || 0;
+    document.getElementById('statDynamics').textContent = s.stats?.total_dynamics || 0;
+    document.getElementById('statInterval').textContent = s.interval_label || '5m';
+
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const mBtnStart = document.getElementById('mBtnStart');
+    const mBtnStop = document.getElementById('mBtnStop');
+    if (btnStart) {
+      btnStart.disabled = running;
+      if (running) {
+        btnStart.className = btnStart.className.replace('bg-green-500', 'bg-red-500').replace('hover:bg-green-600', 'hover:bg-red-600');
+        btnStart.innerHTML = '<span class="material-symbols-outlined text-[16px]">pause</span>运行中';
+      } else {
+        btnStart.className = btnStart.className.replace('bg-red-500', 'bg-green-500').replace('hover:bg-red-600', 'hover:bg-green-600');
+        btnStart.innerHTML = '<span class="material-symbols-outlined text-[16px]">play_arrow</span>开始';
+      }
+    }
+    if (btnStop) {
+      btnStop.disabled = !running;
+      if (running) {
+        btnStop.className = btnStop.className.replace('opacity-50', '').replace('cursor-not-allowed', 'cursor-pointer');
+      } else {
+        if (!btnStop.className.includes('opacity-50')) btnStop.className += ' opacity-50';
+        if (!btnStop.className.includes('cursor-not-allowed')) btnStop.className += ' cursor-not-allowed';
+      }
+    }
+    if (mBtnStart) {
+      mBtnStart.disabled = running;
+      if (running) {
+        mBtnStart.className = mBtnStart.className.replace('bg-green-500', 'bg-red-500');
+        mBtnStart.innerHTML = '<span class="material-symbols-outlined text-[16px]">pause</span>运行中';
+      } else {
+        mBtnStart.className = mBtnStart.className.replace('bg-red-500', 'bg-green-500');
+        mBtnStart.innerHTML = '<span class="material-symbols-outlined text-[16px]">play_arrow</span>开始';
+      }
+    }
+    if (mBtnStop) {
+      mBtnStop.disabled = !running;
+      if (running) {
+        mBtnStop.className = mBtnStop.className.replace('opacity-50', '').replace('cursor-not-allowed', 'cursor-pointer');
+      } else {
+        if (!mBtnStop.className.includes('opacity-50')) mBtnStop.className += ' opacity-50';
+        if (!mBtnStop.className.includes('cursor-not-allowed')) mBtnStop.className += ' cursor-not-allowed';
+      }
+    }
+  } catch (e) { console.error('refreshStatus failed:', e); }
+}
+
+// ====== Targets ======
+let notifyGroupsOptions = [];
+
+async function refreshTargets() {
+  try {
+    const targets = await api('/api/targets');
+    const container = document.getElementById('targetList');
+    document.getElementById('targetCount').textContent = targets.length + ' UP主';
+    if (targets.length === 0) {
+      container.innerHTML = '<div class="text-center py-8 text-gray-400"><span class="material-symbols-outlined text-[32px] mb-2">search</span><div class="text-sm">暂无监控目标</div></div>';
+      return;
+    }
+    container.innerHTML = targets.map(t => {
+      const groupOptions = notifyGroupsOptions.map(g => `<option value="${g.id}" ${g.members.includes(t.uid) ? 'selected' : ''}>${g.group_name}</option>`).join('');
+      return `
+        <div class="flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant hover:border-lime-400/30 transition-all">
+          <div class="w-10 h-10 rounded-full bg-lime-400 flex items-center justify-center text-black font-bold text-sm flex-shrink-0 overflow-hidden">
+            ${t.face ? `<img src="${t.face}" class="w-full h-full object-cover">` : t.name.charAt(0).toUpperCase()}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <a href="${t.space_url}" target="_blank" class="font-bold text-sm text-on-surface hover:text-primary truncate">${t.name}</a>
+              <span class="text-[10px] text-on-surface-variant font-['Space_Grotesk']">UID:${t.uid}</span>
+            </div>
+            <div class="text-[10px] text-gray-400 mt-0.5 font-['Space_Grotesk']">${t.last_check || '从未检查'} | 视频:${t.video_count} 动态:${t.dynamic_count}</div>
+          </div>
+          <select onchange="assignGroup('${t.uid}', this.value)" class="bg-white border border-outline-variant rounded-lg px-2 py-1 text-[10px] font-['Space_Grotesk'] focus:outline-none focus:ring-1 focus:ring-primary-container">
+            <option value="">默认</option>${groupOptions}
+          </select>
+          <button onclick="removeTarget('${t.uid}')" class="text-gray-400 hover:text-red-500 p-1 rounded transition-all active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </div>`;
+    }).join('');
+  } catch (e) { console.error('refreshTargets failed:', e); }
+}
+
+async function addTarget() {
+  const input = document.getElementById('newUidInput');
+  const uid = input.value.trim();
+  if (!uid) return;
+  try {
+    await api('/api/targets', { method: 'POST', body: JSON.stringify({ uid }) });
+    showToast(`已添加 UID ${uid}`, 'success');
+    input.value = '';
+    refreshTargets();
+    refreshStatus();
+  } catch (e) { showToast(`添加失败: ${e.message}`, 'error'); }
+}
+
+async function removeTarget(uid) {
+  try {
+    await api(`/api/targets/${uid}`, { method: 'DELETE' });
+    showToast('目标已删除', 'info');
+    refreshTargets();
+    refreshStatus();
+  } catch (e) { showToast(`删除失败: ${e.message}`, 'error'); }
+}
+
+// ====== Monitor Control ======
+async function startMonitor() {
+  try {
+    document.getElementById('btnStart').disabled = true;
+    await api('/api/start', { method: 'POST' });
+    showToast('监控已启动', 'success');
+    setTimeout(() => refreshStatus(), 1000);
+  } catch (e) { showToast(`启动失败: ${e.message}`, 'error'); document.getElementById('btnStart').disabled = false; }
+}
+
+async function stopMonitor() {
+  try {
+    document.getElementById('btnStop').disabled = true;
+    await api('/api/stop', { method: 'POST' });
+    showToast('监控已停止', 'info');
+    setTimeout(() => refreshStatus(), 1000);
+  } catch (e) { showToast(`停止失败: ${e.message}`, 'error'); }
+}
+
+async function runCheck() {
+  const btn = document.getElementById('btnCheck');
+  const mBtn = document.getElementById('mBtnCheck');
+  const orig = btn ? btn.innerHTML : '';
+  const morig = mBtn ? mBtn.innerHTML : '';
+  if (btn) { btn.innerHTML = '<span class=\"spinner\"></span> 检查中...'; btn.disabled = true; }
+  if (mBtn) { mBtn.innerHTML = '<span class=\"spinner\"></span>'; mBtn.disabled = true; }
+  try {
+    const r = await api('/api/check', { method: 'POST' });
+    if (r.ok) showToast(`检查完成: ${r.result.new_videos} 视频, ${r.result.new_dynamics} 动态`, r.result.new_videos + r.result.new_dynamics > 0 ? 'success' : 'info');
+    else showToast(`检查失败: ${r.error}`, 'error');
+  } catch (e) { showToast(`检查失败: ${e.message}`, 'error'); }
+  finally {
+    if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+    if (mBtn) { mBtn.innerHTML = morig; mBtn.disabled = false; }
+    refreshStatus(); refreshHistory(); refreshSeen();
+  }
+}
+
+async function retryUnnotified() {
+  const btn = document.getElementById('btnRetryUnnotified');
+  const mBtn = document.getElementById('mBtnRetryUnnotified');
+  const orig = btn ? btn.innerHTML : '';
+  const morig = mBtn ? mBtn.innerHTML : '';
+  if (btn) { btn.innerHTML = '<span class="spinner"></span> Retrying...'; btn.disabled = true; }
+  if (mBtn) { mBtn.innerHTML = '<span class="spinner"></span>'; mBtn.disabled = true; }
+  try {
+    const r = await api('/api/retry-unnotified', {
+      method: 'POST',
+      body: JSON.stringify({ lookback_hours: 72 })
+    });
+    if (r.ok) {
+      const total = (r.retried_videos || 0) + (r.retried_dynamics || 0);
+      showToast(`补推完成: ${r.retried_videos || 0} 视频, ${r.retried_dynamics || 0} 动态`, total > 0 ? 'success' : 'info');
+      if (r.delivery_errors && r.delivery_errors.length) {
+        appendTerminalLine(`Feishu 诊断: ${r.delivery_errors.slice(0, 3).join(' | ')}`);
+      }
+      if (r.feishu_diagnostics) {
+        appendTerminalLine(`Feishu 配置: enabled=${r.feishu_diagnostics.enable_feishu}, default=${r.feishu_diagnostics.has_default_webhook}, groups=${(r.feishu_diagnostics.groups || []).length}`);
+      }
+      refreshStatus(); refreshSeen();
+    } else {
+      showToast(`补推失败: ${r.error}`, 'error');
+    }
+  } catch (e) {
+    showToast(`补推失败: ${e.message}`, 'error');
+  } finally {
+    if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+    if (mBtn) { mBtn.innerHTML = morig; mBtn.disabled = false; }
+  }
+}
+
+async function runCleanup() {
+  try {
+    const r = await api('/api/cleanup', { method: 'POST' });
+    showToast(`清理完成: 删 ${r.dynamics_deleted} 动态, ${r.videos_deleted} 视频`, 'success');
+    refreshStatus(); refreshSeen();
+  } catch (e) { showToast(`清理失败: ${e.message}`, 'error'); }
+}
+
+async function updateInterval(value) {
+  try {
+    await api('/api/config', { method: 'PUT', body: JSON.stringify({ MONITOR_INTERVAL: value }) });
+    showToast(`间隔已更新为 ${value}`, 'success');
+    const ds = document.getElementById('intervalSelect');
+    const ms = document.getElementById('mIntervalSelect');
+    if (ds) ds.value = value;
+    if (ms) ms.value = value;
+    refreshStatus();
+  } catch (e) { showToast(`更新失败: ${e.message}`, 'error'); }
+}
+
+// ====== Config ======
+async function loadConfig() {
+  try {
+    const cfg = await api('/api/config');
+    document.getElementById('cfgEnableFeishu').checked = cfg.ENABLE_FEISHU === 'true';
+    document.getElementById('cfgEnableLocal').checked = cfg.ENABLE_LOCAL_OUTPUT === 'true';
+    document.getElementById('cfgEnableDownload').checked = cfg.ENABLE_VIDEO_DOWNLOAD === 'true';
+    document.getElementById('cfgFeishuUrl').value = cfg.FEISHU_WEBHOOK_URL || '';
+    document.getElementById('cfgFeishuSecret').value = cfg.FEISHU_WEBHOOK_SECRET || '';
+    const appIdInput = document.getElementById('cfgFeishuAppId');
+    const appSecretInput = document.getElementById('cfgFeishuAppSecret');
+    if (appIdInput) appIdInput.value = cfg.FEISHU_APP_ID || '';
+    if (appSecretInput) appSecretInput.value = cfg.FEISHU_APP_SECRET || '';
+    const feishuHint = document.getElementById('feishuAppHint');
+    if (feishuHint) {
+      const hasAppId = !!(cfg.FEISHU_APP_ID || '').trim();
+      feishuHint.style.display = hasAppId ? 'none' : 'block';
+    }
+    document.getElementById('cfgRetentionDays').value = cfg.RETENTION_DAYS || '30';
+    document.getElementById('cfgLogLevel').value = cfg.LOG_LEVEL || 'INFO';
+    const ds = document.getElementById('intervalSelect');
+    const ms = document.getElementById('mIntervalSelect');
+    if (ds) ds.value = cfg.MONITOR_INTERVAL || '5m';
+    if (ms) ms.value = cfg.MONITOR_INTERVAL || '5m';
+  } catch (e) { console.error('loadConfig failed:', e); }
+}
+
+async function saveConfig() {
+  try {
+    const updates = {
+      ENABLE_FEISHU: document.getElementById('cfgEnableFeishu').checked ? 'true' : 'false',
+      ENABLE_LOCAL_OUTPUT: document.getElementById('cfgEnableLocal').checked ? 'true' : 'false',
+      ENABLE_VIDEO_DOWNLOAD: document.getElementById('cfgEnableDownload').checked ? 'true' : 'false',
+      FEISHU_WEBHOOK_URL: document.getElementById('cfgFeishuUrl').value,
+      FEISHU_WEBHOOK_SECRET: document.getElementById('cfgFeishuSecret').value,
+      FEISHU_APP_ID: document.getElementById('cfgFeishuAppId')?.value || '',
+      FEISHU_APP_SECRET: document.getElementById('cfgFeishuAppSecret')?.value || '',
+      RETENTION_DAYS: document.getElementById('cfgRetentionDays').value,
+      LOG_LEVEL: document.getElementById('cfgLogLevel').value,
+    };
+    await api('/api/config', { method: 'PUT', body: JSON.stringify(updates) });
+    showToast('配置已保存', 'success');
+    refreshStatus();
+  } catch (e) { showToast(`保存失败: ${e.message}`, 'error'); }
+}
+
+async function exportTransferSettings() {
+  try {
+    const data = await api('/api/export-settings');
+    const text = JSON.stringify(data, null, 2);
+    const box = document.getElementById('settingsTransferBox');
+    if (box) {
+      box.value = text;
+      box.focus();
+      box.select();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try { await navigator.clipboard.writeText(text); } catch (_) {}
+    }
+    showToast('配置已导出，可复制到 APP 导入', 'success');
+  } catch (e) {
+    showToast(`导出失败: ${e.message}`, 'error');
+  }
+}
+
+async function importTransferSettings() {
+  const box = document.getElementById('settingsTransferBox');
+  const text = box ? box.value.trim() : '';
+  if (!text) {
+    showToast('请先粘贴配置包', 'error');
+    return;
+  }
+  try {
+    const data = JSON.parse(text);
+    const result = await api('/api/import-settings', { method: 'POST', body: JSON.stringify(data) });
+    if (!result.ok) {
+      throw new Error(result.error || 'import failed');
+    }
+    showToast(`配置已导入：${result.groups || 0} 组，${result.members || 0} 成员`, 'success');
+    await Promise.all([loadConfig(), refreshNotifyGroups(), refreshTargets(), refreshStatus(), loadCookieStatus()]);
+  } catch (e) {
+    showToast(`导入失败: ${e.message}`, 'error');
+  }
+}
+
+// ====== Cookie Management ======
+async function loadCookieStatus() {
+  try {
+    const data = await api('/api/cookie');
+    const badge = document.getElementById('cookieStatusBadge');
+    const info = document.getElementById('cookieStatusInfo');
+    const msg = document.getElementById('cookieStatusMsg');
+    const status = data.status || {};
+
+    if (status.is_logged_in) {
+      badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700';
+      badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>已登录';
+      info.className = 'mb-3 p-3 rounded-lg bg-green-50 text-body-sm text-green-700';
+      msg.textContent = status.message || '已登录';
+      const qrSection = document.getElementById('qrLoginSection');
+      if (qrSection) qrSection.classList.add('hidden');
+    } else if (status.has_sessdata) {
+      badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-600';
+      badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>已过期';
+      info.className = 'mb-3 p-3 rounded-lg bg-red-50 text-body-sm text-red-600';
+      msg.textContent = status.message || 'Cookie 已过期';
+      const qrSection = document.getElementById('qrLoginSection');
+      if (qrSection) qrSection.classList.remove('hidden');
+    } else {
+      badge.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500';
+      badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>未登录';
+      info.className = 'mb-3 p-3 rounded-lg bg-surface-container text-body-sm text-on-surface-variant';
+      msg.textContent = '未登录，使用公开 API 获取数据';
+      const qrSection = document.getElementById('qrLoginSection');
+      if (qrSection) qrSection.classList.remove('hidden');
+    }
+    info.classList.remove('hidden');
+  } catch (e) { console.error('loadCookieStatus failed:', e); }
+}
+
+async function saveCookie() {
+  const input = document.getElementById('cookieInput').value.trim();
+  if (!input) {
+    showToast('请输入 Cookie', 'error');
+    return;
+  }
+  const btn = document.getElementById('btnSaveCookie');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>验证中...';
+  try {
+    const result = await api('/api/cookie', {
+      method: 'POST',
+      body: JSON.stringify({ cookie: input }),
+    });
+    if (result.error) {
+      showToast(result.error, 'error');
+    } else if (result.status && result.status.is_logged_in) {
+      showToast(`Cookie 验证成功: ${result.status.message}`, 'success');
+      document.getElementById('cookieInput').value = '';
+    } else if (result.status) {
+      showToast(`Cookie 已保存但验证失败: ${result.status.message}`, 'warning');
+    } else {
+      showToast('Cookie 已保存', 'success');
+    }
+    loadCookieStatus();
+  } catch (e) {
+    showToast(`保存失败: ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">save</span>保存并验证';
+  }
+}
+
+async function verifyCookie() {
+  const btn = document.getElementById('btnVerifyCookie');
+  btn.disabled = true;
+  try {
+    const status = await api('/api/cookie/verify', { method: 'POST' });
+    if (status.is_logged_in) {
+      showToast(`验证成功: ${status.message}`, 'success');
+    } else {
+      showToast(`验证失败: ${status.message}`, 'error');
+    }
+    loadCookieStatus();
+  } catch (e) {
+    showToast(`验证失败: ${e.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function clearCookie() {
+  if (!confirm('确定要清除所有 Cookie 吗？')) return;
+  try {
+    await api('/api/cookie', { method: 'DELETE' });
+    document.getElementById('cookieInput').value = '';
+    showToast('Cookie 已清除', 'success');
+    loadCookieStatus();
+  } catch (e) {
+    showToast(`清除失败: ${e.message}`, 'error');
+  }
+}
+
+async function refreshHistory() {
+  try {
+    const history = await api('/api/history?limit=15');
+    const container = document.getElementById('historyList');
+    if (history.length === 0) {
+      container.innerHTML = '<div class="text-center py-8 text-gray-400"><span class="material-symbols-outlined text-[32px] mb-2">inbox</span><div class="text-sm">暂无检查记录</div></div>';
+      return;
+    }
+    container.innerHTML = history.map(h => {
+      const vClass = h.new_videos > 0 ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400';
+      const dClass = h.new_dynamics > 0 ? 'bg-lime-100 text-lime-600' : 'bg-gray-100 text-gray-400';
+      const eClass = h.errors > 0 ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-400';
+      return `
+        <div class="flex items-center gap-3 p-3 bg-surface-container rounded-lg border border-outline-variant">
+          <span class="font-data-mono text-[10px] text-on-surface-variant flex-shrink-0">${h.timestamp}</span>
+          <div class="flex gap-2">
+            <span class="${vClass} px-2 py-0.5 rounded text-[10px] font-bold font-['Space_Grotesk']">视频 ${h.new_videos}</span>
+            <span class="${dClass} px-2 py-0.5 rounded text-[10px] font-bold font-['Space_Grotesk']">动态 ${h.new_dynamics}</span>
+            ${h.errors > 0 ? `<span class="${eClass} px-2 py-0.5 rounded text-[10px] font-bold font-['Space_Grotesk']">错误 ${h.errors}</span>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) { console.error('refreshHistory failed:', e); }
+}
+
+async function refreshSeen() {
+  try {
+    const data = await api('/api/seen?limit=30');
+    const vtb = document.getElementById('videosTable');
+    if (!data.videos || data.videos.length === 0) {
+      vtb.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-8">暂无视频记录</td></tr>';
+    } else {
+      vtb.innerHTML = data.videos.map(v => {
+        const time = v.first_seen_ts ? new Date(v.first_seen_ts * 1000).toLocaleString('zh-CN') : '-';
+        const link = v.link ? `<a href="${v.link}" target="_blank" class="text-blue-500 hover:underline">${v.bvid}</a>` : v.bvid;
+        return `<tr class="border-b border-outline-variant hover:bg-surface-container transition-colors"><td class="py-2 px-2">${link}</td><td class="py-2 px-2 truncate max-w-[120px]" title="${(v.title||'').replace(/"/g,'&quot;')}">${v.title || '-'}</td><td class="py-2 px-2">${v.uid || '-'}</td><td class="py-2 px-2 font-['Space_Grotesk'] text-[11px]">${time}</td><td class="py-2 px-2"><span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${v.notified ? 'bg-lime-100 text-lime-600' : 'bg-red-100 text-red-500'}">${v.notified ? '已通知' : '未通知'}</span></td></tr>`;
+      }).join('');
+    }
+    const dtb = document.getElementById('dynamicsTable');
+    if (!data.dynamics || data.dynamics.length === 0) {
+      dtb.innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-8">暂无动态记录</td></tr>';
+    } else {
+      dtb.innerHTML = data.dynamics.map(d => {
+        const time = d.first_seen_ts ? new Date(d.first_seen_ts * 1000).toLocaleString('zh-CN') : '-';
+        const preview = (d.text_preview || '-').substring(0, 40);
+        const link = d.link ? `<a href="${d.link}" target="_blank" class="text-blue-500 hover:underline">${d.title || d.dynamic_id}</a>` : (d.title || d.dynamic_id);
+        const dtypeLabel = {'DYNAMIC_TYPE_DRAW':'图文','DYNAMIC_TYPE_AV':'视频','DYNAMIC_TYPE_WORD':'文字','DYNAMIC_TYPE_FORWARD':'转发','DYNAMIC_TYPE_LIVE_RCMD':'直播'}[d.dynamic_type] || d.dynamic_type || '-';
+        let imgHtml = '-';
+        try {
+          const imgs = JSON.parse(d.image_urls || '[]');
+          if (imgs.length > 0) {
+            imgHtml = `<div class="flex gap-1">${imgs.slice(0,3).map(u => `<img src="${u}" class="w-8 h-8 rounded object-cover" loading="lazy" onerror="this.style.display='none'">`).join('')}${imgs.length > 3 ? `<span class="text-[10px] text-gray-400">+${imgs.length-3}</span>` : ''}</div>`;
+          }
+        } catch(e) {}
+        return `<tr class="border-b border-outline-variant hover:bg-surface-container transition-colors"><td class="py-2 px-2">${link}</td><td class="py-2 px-2">${d.author_name || d.uid || '-'}</td><td class="py-2 px-2">${dtypeLabel}</td><td class="py-2 px-2 truncate max-w-[160px]" title="${(d.full_text||d.text_preview||'').replace(/"/g,'&quot;')}">${preview}</td><td class="py-2 px-2">${imgHtml}</td><td class="py-2 px-2 font-['Space_Grotesk'] text-[11px]">${time}</td><td class="py-2 px-2"><span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${d.notified ? 'bg-lime-100 text-lime-600' : 'bg-red-100 text-red-500'}">${d.notified ? '已通知' : '未通知'}</span></td></tr>`;
+      }).join('');
+    }
+  } catch (e) { console.error('refreshSeen failed:', e); }
+}
+
+// ====== Tabs ======
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-btn').forEach(t => { t.classList.remove('active', 'bg-lime-400', 'text-black'); t.classList.add('text-gray-500'); });
+  btn.classList.add('active', 'bg-lime-400', 'text-black');
+  btn.classList.remove('text-gray-500');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+  document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+  if (tabId === 'videos' || tabId === 'dynamics') refreshSeen();
+}
+
+// ====== Notify Groups ======
+async function refreshNotifyGroups() {
+  try {
+    const groups = await api('/api/notify-groups');
+    notifyGroupsOptions = groups;
+    const container = document.getElementById('notifyGroupsList');
+    if (groups.length === 0) {
+      container.innerHTML = '<div class="text-center py-6 text-gray-400"><span class="material-symbols-outlined text-[24px] mb-1">hub</span><div class="text-xs">暂无分组</div></div>';
+      return;
+    }
+    container.innerHTML = groups.map(g => {
+      const members = (g.member_info || g.members.map(uid => ({uid, name: `UID:${uid}`}))).map(m => `<span class="inline-flex items-center gap-1 bg-lime-100 text-lime-600 px-1.5 py-0.5 rounded text-[10px] font-bold">${m.name}<span class="cursor-pointer text-red-400 hover:text-red-600" onclick="removeGroupMember(${g.id}, '${m.uid}')">x</span></span>`).join('');
+      const masked = g.webhook_url ? g.webhook_url.substring(0, 30) + '...' : '';
+      return `
+        <div data-group-id="${g.id}" class="p-3 bg-surface-container rounded-lg border border-outline-variant">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-bold text-on-surface">${g.group_name}</span>
+              <span class="text-[9px] text-gray-400 font-['Space_Grotesk']">ID:${g.id}</span>
+            </div>
+            <div class="flex gap-1">
+              <button onclick="testGroupFeishu(${g.id})" class="text-gray-400 hover:text-black p-1 rounded transition-all" title="测试"><span class="material-symbols-outlined text-[14px]">send</span></button>
+              <button onclick="editNotifyGroup(${g.id})" class="text-gray-400 hover:text-black p-1 rounded transition-all" title="编辑"><span class="material-symbols-outlined text-[14px]">edit</span></button>
+              <button onclick="deleteNotifyGroup(${g.id})" class="text-gray-400 hover:text-red-500 p-1 rounded transition-all" title="删除"><span class="material-symbols-outlined text-[14px]">delete</span></button>
+            </div>
+          </div>
+          <div class="text-[10px] text-gray-400 mb-2 truncate" title="${g.webhook_url}">${masked}</div>
+          <div class="mb-2">${members || '<span class="text-[10px] text-gray-400">无成员</span>'}</div>
+          <div class="flex gap-2">
+            <input type="text" id="addMemberInput_${g.id}" class="flex-1 bg-white border border-outline-variant rounded-lg px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="输入UID">
+            <button onclick="addGroupMemberFromInput(${g.id})" class="bg-lime-400 text-black px-2 py-1 rounded-lg text-[10px] font-bold hover:brightness-95 active:scale-95 transition-all">+</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) { console.error('refreshNotifyGroups failed:', e); }
+}
+
+function showAddGroupForm() { document.getElementById('addGroupForm').style.display = 'block'; document.getElementById('newGroupName').focus(); }
+function hideAddGroupForm() { document.getElementById('addGroupForm').style.display = 'none'; ['newGroupName','newGroupWebhook','newGroupSecret'].forEach(id => document.getElementById(id).value = ''); }
+
+async function createNotifyGroup() {
+  const name = document.getElementById('newGroupName').value.trim();
+  const webhook = document.getElementById('newGroupWebhook').value.trim();
+  const secret = document.getElementById('newGroupSecret').value.trim();
+  if (!name) { showToast('请输入分组名称', 'error'); return; }
+  if (!webhook) { showToast('请输入 Webhook URL', 'error'); return; }
+  try {
+    await api('/api/notify-groups', { method: 'POST', body: JSON.stringify({ group_name: name, webhook_url: webhook, webhook_secret: secret }) });
+    showToast(`分组 "${name}" 创建成功`, 'success');
+    hideAddGroupForm();
+    refreshNotifyGroups(); refreshTargets();
+  } catch (e) { showToast(`创建失败: ${e.message}`, 'error'); }
+}
+
+async function deleteNotifyGroup(groupId) {
+  try { await api(`/api/notify-groups/${groupId}`, { method: 'DELETE' }); showToast('分组已删除', 'info'); refreshNotifyGroups(); refreshTargets(); }
+  catch (e) { showToast(`删除失败: ${e.message}`, 'error'); }
+}
+
+async function editNotifyGroup(groupId) {
+  const group = notifyGroupsOptions.find(g => g.id === groupId);
+  if (!group) return;
+  const card = document.querySelector(`[data-group-id="${groupId}"]`);
+  if (!card) return;
+  const editHtml = `
+    <div class="space-y-2">
+      <input type="text" id="editGroupName_${groupId}" value="${group.group_name}" class="w-full bg-white border border-outline-variant rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="分组名称">
+      <input type="text" id="editGroupWebhook_${groupId}" value="${group.webhook_url}" class="w-full bg-white border border-outline-variant rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="Webhook URL">
+      <input type="text" id="editGroupSecret_${groupId}" value="${group.webhook_secret || ''}" class="w-full bg-white border border-outline-variant rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="签名密钥">
+      <div class="flex gap-2">
+        <button onclick="saveEditGroup(${groupId})" class="flex-1 bg-lime-400 text-black px-2 py-1 rounded-lg text-[10px] font-bold hover:brightness-95 active:scale-95 transition-all">保存</button>
+        <button onclick="refreshNotifyGroups()" class="flex-1 bg-gray-200 text-gray-600 px-2 py-1 rounded-lg text-[10px] font-bold hover:brightness-95 active:scale-95 transition-all">取消</button>
+      </div>
+    </div>`;
+  card.innerHTML = editHtml;
+}
+
+async function saveEditGroup(groupId) {
+  const name = document.getElementById(`editGroupName_${groupId}`).value.trim();
+  const webhook = document.getElementById(`editGroupWebhook_${groupId}`).value.trim();
+  const secret = document.getElementById(`editGroupSecret_${groupId}`).value.trim();
+  if (!name) { showToast('请输入分组名称', 'error'); return; }
+  if (!webhook) { showToast('请输入 Webhook URL', 'error'); return; }
+  try {
+    await api(`/api/notify-groups/${groupId}`, { method: 'PUT', body: JSON.stringify({ group_name: name, webhook_url: webhook, webhook_secret: secret }) });
+    showToast('分组已更新', 'success'); refreshNotifyGroups();
+  } catch (e) { showToast(`更新失败: ${e.message}`, 'error'); }
+}
+
+async function addGroupMemberFromInput(groupId) {
+  const input = document.getElementById(`addMemberInput_${groupId}`);
+  const uid = input.value.trim();
+  if (!uid) return;
+  try {
+    await api(`/api/notify-groups/${groupId}/members`, { method: 'POST', body: JSON.stringify({ uid }) });
+    showToast(`UID ${uid} 已添加`, 'success');
+    input.value = '';
+    refreshNotifyGroups(); refreshTargets();
+  } catch (e) { showToast(`添加失败: ${e.message}`, 'error'); }
+}
+
+async function removeGroupMember(groupId, uid) {
+  try {
+    await api(`/api/notify-groups/${groupId}/members/${uid}`, { method: 'DELETE' });
+    showToast(`UID ${uid} 已移除`, 'info');
+    refreshNotifyGroups(); refreshTargets();
+  } catch (e) { showToast(`移除失败: ${e.message}`, 'error'); }
+}
+
+async function assignGroup(uid, groupId) {
+  try {
+    const currentGroup = notifyGroupsOptions.find(g => g.members.includes(uid));
+    if (currentGroup) {
+      await api(`/api/notify-groups/${currentGroup.id}/members/${uid}`, { method: 'DELETE' });
+    }
+    if (groupId) {
+      await api(`/api/notify-groups/${groupId}/members`, { method: 'POST', body: JSON.stringify({ uid }) });
+    }
+    showToast(groupId ? `已分配到分组` : `已恢复默认`, 'success');
+    refreshNotifyGroups(); refreshTargets();
+  } catch (e) { showToast(`分配失败: ${e.message}`, 'error'); }
+}
+
+async function testDefaultFeishu() {
+  const btns = [document.getElementById('btnTestDefault'), document.getElementById('btnTestPush'), document.getElementById('mBtnTestPush')];
+  const origs = btns.map(b => b ? b.innerHTML : '');
+  btns.forEach(b => { if (b) { b.innerHTML = '<span class="spinner"></span>'; b.disabled = true; } });
+  try {
+    const result = await api('/api/test-feishu', { method: 'POST', body: JSON.stringify({ webhook_url: document.getElementById('cfgFeishuUrl').value, webhook_secret: document.getElementById('cfgFeishuSecret').value }) });
+    showToast(result.ok ? '测试消息发送成功！' : `发送失败: ${result.error || '未知错误'}`, result.ok ? 'success' : 'error');
+    if (result.image_url_used) {
+      appendTerminalLine(`Feishu 图片测试: ${result.image_uploaded ? '已上传图片' : '未上传图片'} ${result.image_url_used}`);
+    } else {
+      appendTerminalLine('Feishu 图片测试: 没有找到最近图片，测试消息未包含图片');
+    }
+    if (result.image_upload_errors && result.image_upload_errors.length) {
+      appendTerminalLine(`Feishu 图片错误: ${result.image_upload_errors.slice(0, 3).join(' | ')}`);
+      showToast('测试消息已发出，但图片上传失败，查看终端日志', 'error');
+    }
+  } catch (e) { showToast(`请求失败: ${e.message}`, 'error'); }
+  finally { btns.forEach((b, i) => { if (b) { b.innerHTML = origs[i]; b.disabled = false; } }); }
+}
+
+async function testGroupFeishu(groupId) {
+  try {
+    const result = await api('/api/test-feishu', { method: 'POST', body: JSON.stringify({ group_id: groupId }) });
+    showToast(result.ok ? '测试消息发送成功！' : `发送失败: ${result.error || '未知错误'}`, result.ok ? 'success' : 'error');
+    if (result.image_url_used) {
+      appendTerminalLine(`Feishu 图片测试: ${result.image_uploaded ? '已上传图片' : '未上传图片'} ${result.image_url_used}`);
+    }
+    if (result.image_upload_errors && result.image_upload_errors.length) {
+      appendTerminalLine(`Feishu 图片错误: ${result.image_upload_errors.slice(0, 3).join(' | ')}`);
+      showToast('测试消息已发出，但图片上传失败，查看终端日志', 'error');
+    }
+  } catch (e) { showToast(`请求失败: ${e.message}`, 'error'); }
+}
+
+// ====== Terminal Logs ======
+let terminalLines = [];
+let useJsApiLogs = false;
+
+function appendTerminalLine(rawLine) {
+  const viewer = document.getElementById('terminalBody');
+  const empty = viewer.querySelector('.italic');
+  if (empty) empty.remove();
+
+  let msgClass = 'text-white/80';
+  const line = String(rawLine);
+  if (line.includes('[ERROR]') || line.includes('失败') || line.includes('failed')) msgClass = 'text-red-400';
+  else if (line.includes('[WARNING]') || line.includes('警告')) msgClass = 'text-yellow-400';
+  else if (line.includes('complete') || line.includes('完成') || line.includes('started')) msgClass = 'text-lime-400';
+  else if (line.includes('[INFO]')) msgClass = 'text-cyan-300';
+
+  const div = document.createElement('div');
+  div.className = 'font-mono text-[11px] leading-relaxed';
+
+  const timeMatch = line.match(/^(\d{2}:\d{2}:\d{2})\s+/);
+  if (timeMatch) {
+    div.innerHTML = `<span class="text-gray-500">${timeMatch[1]}</span> <span class="${msgClass}">${line.substring(timeMatch[0].length)}</span>`;
+  } else {
+    div.innerHTML = `<span class="${msgClass}">${line}</span>`;
+  }
+
+  viewer.appendChild(div);
+  terminalLines.push(line);
+  if (terminalLines.length > 500) { viewer.removeChild(viewer.firstChild); terminalLines.shift(); }
+  viewer.scrollTop = viewer.scrollHeight;
+}
+
+function clearLogs() {
+  document.getElementById('terminalBody').innerHTML = '<div class="text-center text-gray-500 py-8 italic">日志已清空</div>';
+  terminalLines = [];
+}
+
+async function pollLogs() {
+  if (!useJsApiLogs || !window.pywebview) return;
+  try {
+    const lines = await window.pywebview.api.get_logs();
+    for (const line of lines) appendTerminalLine(line);
+  } catch (e) {}
+}
+
+let terminalOffset = 0;
+
+async function pollServerLogs() {
+  try {
+    const res = await api(`/api/logs?after=${terminalOffset}`);
+    if (res.logs && res.logs.length > 0) {
+      for (const line of res.logs) appendTerminalLine(line);
+    }
+    if (res.total !== undefined) terminalOffset = res.total;
+  } catch (e) {}
+}
+
+// ====== Toast ======
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  const colors = { success: 'bg-lime-400 text-black', error: 'bg-red-500 text-white', info: 'bg-cyan-400 text-black' };
+  const icons = { success: 'check_circle', error: 'error', info: 'info' };
+  toast.className = `${colors[type] || colors.info} px-4 py-3 rounded-xl text-sm font-bold shadow-lg animate-toast-in max-w-[360px] flex items-center gap-2`;
+  toast.innerHTML = `<span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">${icons[type] || icons.info}</span>${message}`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.remove('animate-toast-in');
+    toast.classList.add('animate-toast-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ====== Init ======
+async function refreshAll() {
+  const bar = document.getElementById('boot-progress-bar');
+  if (bar) bar.style.width = '42%';
+  await refreshNotifyGroups();
+  if (bar) bar.style.width = '68%';
+  await Promise.all([refreshStatus(), refreshTargets(), refreshHistory(), loadConfig(), loadCookieStatus(), refreshSeen()]);
+  if (bar) bar.style.width = '100%';
+}
+
+let refreshTimer = null;
+function startAutoRefresh() {
+  refreshTimer = setInterval(() => { refreshStatus(); pollServerLogs(); }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.pywebview) useJsApiLogs = true;
+
+  document.querySelectorAll('[class*="animate-slide-up"]').forEach((el, i) => {
+    el.style.animationDelay = `${i * 0.04}s`;
+  });
+
+  refreshAll();
+  startAutoRefresh();
+
+  // Hide font loading overlay when fonts are ready
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      const overlay = document.getElementById('font-loading-overlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.transform = 'scale(1.02)';
+        setTimeout(() => { overlay.style.display = 'none'; }, 500);
+      }
+    });
+  } else {
+    setTimeout(() => {
+      const overlay = document.getElementById('font-loading-overlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.transform = 'scale(1.02)';
+        setTimeout(() => { overlay.style.display = 'none'; }, 500);
+      }
+    }, 800);
+  }
+});
+</script>
+</body>
+</html>
